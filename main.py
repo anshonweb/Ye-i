@@ -29,7 +29,7 @@ try:
 except Exception as e:
     print(f'Failed to log in: {e}')
 
-def generate_response(comment):
+def generate_response(comment,body,title):
 
   
 
@@ -37,9 +37,14 @@ def generate_response(comment):
     response = requests.get(url)
     tweet = response.json().get('quote')
     prompt = f"""
-    You are a bot on the subreddit "goodasssub". Your task is to reply to the given comment with the following tweet:{tweet}. You can modify the tweet (make it very few words (3-4)/, remove one-two words only,
-    add emoji) or leave it untouched with respect to the context of the comment. You dont have to do anything extra except this.
-    The Comment is:"{comment}"
+    You are Kanye West. Your task is to reply to the given comment in context to the post body and title like you are kanye west.Give very short replies. The Replies should be funny and short. Try to act horny and bipolar where needed.
+    You also add kanye tweets: {tweet} if you want (this is not neccessary in your reply do it with a probability of 20%).
+    Donot add what type of comment you are putting example donot put (Horny 20% type titles) only the comment should be present.
+    The Comment is:"{comment}" 
+    The Post Title is: "{title}"
+    The Post Body is: "{body}
+
+    Donot generate multiple comments, just reply with any one type randomly. 
     """
 
     model = genai.GenerativeModel('gemini-1.5-flash-8b')
@@ -55,7 +60,7 @@ def generate_response(comment):
 
 def reply_to_comments():
     subreddit = reddit.subreddit('goodasssub')
-    for submission in subreddit.new(limit=3): 
+    for submission in subreddit.new(limit=4): 
         submission.comments.replace_more(limit=0)  
         comments = [comment for comment in submission.comments if isinstance(comment, praw.models.Comment)]
 
@@ -65,7 +70,7 @@ def reply_to_comments():
             comment_to_reply = random.choice(comments)
 
             if random.random() < 0.3:  
-                reply_text = generate_response(comment_to_reply.body)
+                reply_text = generate_response(comment_to_reply.body, submission.selftext, submission.title)
                 
                 
                 comment_to_reply.reply(reply_text)
@@ -73,6 +78,10 @@ def reply_to_comments():
 
             else:
                 print(f"Skipping comment: {comment_to_reply.body}")
+
+
+
+
 
 if __name__ == "__main__":
     while True:
