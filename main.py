@@ -75,9 +75,25 @@ def reply_to_comments():
                 
                 comment_to_reply.reply(reply_text)
                 print(f"Replied to comment: {comment_to_reply.body}")
+                time.sleep(180)
 
             else:
                 print(f"Skipping comment: {comment_to_reply.body}")
+
+def reply_mentioned():
+    url = "https://api.kanye.rest/"
+    response = requests.get(url)
+    tweet = response.json().get('quote')
+    for mention in reddit.inbox.mentions():
+        if not mention.was_comment:
+            continue
+        try:
+            mention.reply(tweet)
+            mention.mark_read()
+            print(f"Replied to mention: {mention.body}")
+        except Exception as e:
+            print(f'Failed to reply {e}')
+
 
 
 
@@ -87,6 +103,7 @@ if __name__ == "__main__":
     while True:
         try:
             reply_to_comments()  
+            reply_mentioned()
         except Exception as e:
             print(f"Error: {e}")
-        time.sleep(180) 
+        
